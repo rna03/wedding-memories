@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💍 Düğün Hatıraları</title>
+  <style>
+    :root {
+      --gold: #c9a227;
+      --bg: #fffaf5;
+      --ink: #2b2b2b;
+      --line: #ead9b0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: var(--bg); color: var(--ink);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    header {
+      width: 100%; padding: 28px 16px; text-align: center;
+      background: linear-gradient(180deg, #fff, #fff8ec);
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0 0 8px; font-weight: 700; letter-spacing: 0.5px; }
+    .subtitle { color: #6b6b6b; }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 16px;
+      width: min(720px, 92vw); margin: 18px auto; padding: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    }
+    .row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 760px){ .row { grid-template-columns: 1fr 1fr; } }
+    .box {
+      padding: 16px; border: 2px dashed var(--line); border-radius: 12px; text-align: center;
+    }
+    .box h3 { margin: 4px 0 8px; color: var(--gold); }
+    button, input[type="file"], textarea {
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid var(--line); font-size: 15px; outline: none;
+    }
+    button {
+      cursor: pointer; border: none; background: var(--gold); color: #fff; font-weight: 600;
+    }
+    button[disabled] { opacity: .6; cursor: not-allowed; }
+    textarea { min-height: 110px; resize: vertical; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .tile { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #fff; }
+    .tile a { word-break: break-all; font-size: 12px; display: inline-block; margin-top: 6px; }
+    .muted { color:#777; font-size: 13px; }
+    .footer { margin: 24px 0 36px; color:#888; font-size: 13px; text-align:center; }
+    .success { border: 1px solid #d6f5df; background: #f5fffa; color:#0a6b2d; padding:10px; border-radius:8px; }
+    .error { border: 1px solid #ffd6d6; background: #fff5f5; color:#9d0b0b; padding:10px; border-radius:8px; }
+    .qr-hint { text-align:center; margin-top:8px; font-size: 13px; color:#666; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💍 Düğün Hatıraları</h1>
+    <div class="subtitle">Fotoğraf yükleyin, sesli mesaj bırakın, güzel bir not yazın 🎉</div>
+  </header>
+
+  <main class="card">
+    <div class="row">
+      <!-- FOTOĞRAF / VİDEO / SES DOSYASI YÜKLE -->
+      <section class="box">
+        <h3>📸 Fotoğraf / 🎞️ Video / 🎧 Dosya yükle</h3>
+        <input id="fileInput" type="file" accept="image/*,video/*,audio/*" />
+        <div style="height:8px;"></div>
+        <button id="btnUploadFile">Yükle</button>
+        <div id="fileMsg" class="muted" style="margin-top:8px;"></div>
+      </section>
+
+      <!-- MİKROFONDAN SES KAYDET -->
+      <section class="box">
+        <h3>🎤 Mikrofondan Ses Kaydı</h3>
+        <div style="display:flex; gap:8px;">
+          <button id="btnStart">Kaydı Başlat</button>
+          <button id="btnStop" disabled>Kaydı Durdur & Yükle</button>
+        </div>
+        <div class="muted" style="margin-top:8px;">Tarayıcı izni isteyecek. Kayıt <code>.webm</code> olarak yüklenir.</div>
+        <audio id="player" controls style="width:100%; margin-top:10px; display:none;"></audio>
+        <div id="recMsg" class="muted" style="margin-top:8px;"></div>
+      </section>
+    </div>
+
+    <!-- YAZILI NOT -->
+    <section class="box" style="margin-top:12px;">
+      <h3>📝 Yazılı Not Bırak</h3>
+      <textarea id="noteArea" placeholder="Mutluluklar dileriz! 💐"></textarea>
+      <button id="btnNote">Notu Yükle</button>
+      <div class="muted" style="margin-top:8px;">Notlar Cloudinary'ye <code>.txt</code> dosyası olarak kaydedilir.</div>
+      <div id="noteMsg" style="margin-top:8px;"></div>
+    </section>
+
+    <!-- SON AN EKLENENLER (bu sayfada gösterim) -->
+    <section style="margin-top:18px;">
+      <h3>✨ Bu oturumda yükledikleriniz</h3>
+      <div id="gallery" class="gallery"></div>
+      <div class="muted" style="margin-top:8px;">
+        Not: Güvenlik nedeniyle Cloudinary’den eski yüklemeleri listemiyoruz (API Secret gerektirir).
+        Burada sadece bu sayfayı açıkken yükledikleriniz görünür.
+      </div>
+    </section>
+
+    <!-- QR BİLGİSİ -->
+    <section style="margin-top:18px; text-align:center;">
+      <div class="qr-hint">
+        Bu sayfayı GitHub Pages’e koyduktan sonra linkinizi herhangi bir QR üreticiyle (örn. QR Code Generator) koda dönüştürün.
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">Sevgiyle… 💛</div>
+
+  <script>
+    // === AYARLARINI BURADA DÜZENLE ===
+    const CLOUD_NAME = "ddbwmzqsr";      // Cloudinary cloud name'ini yaz
+    const UPLOAD_PRESET = "wedding_upload"; // Unsigned preset adını yaz
+
+    // -------- Yardımcılar --------
+    const sel = (q) => document.querySelector(q);
+    const apiUrl = (resourceType = "auto") => `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
+
+    function addTile({ url, kind, noteText }) {
+      const box = document.createElement("div");
+      box.className = "tile";
+      if (kind === "image") {
+        const img = document.createElement("img");
+        img.src = url; img.alt = "upload"; img.style.width = "100%"; img.style.borderRadius = "6px";
+        box.appendChild(img);
+      } else if (kind === "audio") {
+        const a = document.createElement("audio");
+        a.controls = true; a.src = url; a.style.width = "100%";
+        box.appendChild(a);
+      } else if (kind === "video") {
+        const v = document.createElement("video");
+        v.controls = true; v.src = url; v.style.width = "100%";
+        box.appendChild(v);
+      } else if (kind === "note") {
+        const p = document.createElement("div");
+        p.textContent = noteText || "Not dosyası";
+        p.style.whiteSpace = "pre-wrap";
+        box.appendChild(p);
+      }
+      const link = document.createElement("a");
+      link.href = url; link.target = "_blank"; link.rel = "noopener";
+      link.textContent = url;
+      box.appendChild(link);
+      sel("#gallery").prepend(box);
+    }
+
+    async function uploadToCloudinary(file, resourceType = "auto") {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("upload_preset", UPLOAD_PRESET);
+      const res = await fetch(apiUrl(resourceType), { method: "POST", body: form });
+      if (!res.ok) throw new Error("Yükleme başarısız");
+      return res.json();
+    }
+
+    // -------- 1) Dosya yükle (image/video/audio) --------
+    sel("#btnUploadFile").addEventListener("click", async () => {
+      const elMsg = sel("#fileMsg");
+      elMsg.textContent = "";
+      const input = sel("#fileInput");
+      const file = input.files[0];
+      if (!file) { elMsg.textContent = "Lütfen bir dosya seçin."; return; }
+
+      try {
+        sel("#btnUploadFile").disabled = true;
+        elMsg.textContent = "Yükleniyor…";
+        const type = file.type;
+
+        // Cloudinary, audio/video'yu genellikle "video" resource type ile kabul eder.
+        let resourceType = "auto"; // güvenli seçim
+        if (type.startsWith("audio/")) resourceType = "video";
+
+        const data = await uploadToCloudinary(file, resourceType);
+        elMsg.innerHTML = `<div class="success">Yüklendi ✔️ <a href="${data.secure_url}" target="_blank">Aç</a></div>`;
+
+        // Galeri kartı
+        let kind = "file";
+        if (type.startsWith("image/")) kind = "image";
+        else if (type.startsWith("audio/")) kind = "audio";
+        else if (type.startsWith("video/")) kind = "video";
+        addTile({ url: data.secure_url, kind });
+
+        input.value = "";
+      } catch (e) {
+        elMsg.innerHTML = `<div class="error">Hata: ${e.message}</div>`;
+      } finally {
+        sel("#btnUploadFile").disabled = false;
+      }
+    });
+
+    // -------- 2) Mikrofondan ses kaydı --------
+    let mediaRecorder, chunks = [];
+    sel("#btnStart").addEventListener("click", async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          const file = new File([blob], `voice_${Date.now()}.webm`, { type: "audio/webm" });
+
+          sel("#recMsg").textContent = "Yükleniyor…";
+          sel("#btnStop").disabled = true;
+          try {
+            // Audio, Cloudinary'de "video" resource type ile yüklenir
+            const data = await uploadToCloudinary(file, "video");
+            sel("#player").style.display = "block";
+            sel("#player").src = data.secure_url;
+            sel("#recMsg").innerHTML = `<div class="success">Ses yüklendi ✔️ <a href="${data.secure_url}" target="_blank">Aç</a></div>`;
+            addTile({ url: data.secure_url, kind: "audio" });
+          } catch (e) {
+            sel("#recMsg").innerHTML = `<div class="error">Hata: ${e.message}</div>`;
+          }
+        };
+        mediaRecorder.start();
+        sel("#btnStart").disabled = true;
+        sel("#btnStop").disabled = false;
+        sel("#recMsg").textContent = "Kayıt yapılıyor… Konuşabilirsiniz.";
+      } catch (e) {
+        sel("#recMsg").innerHTML = `<div class="error">Mikrofona erişilemedi: ${e.message}</div>`;
+      }
+    });
+
+    sel("#btnStop").addEventListener("click", () => {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        sel("#btnStart").disabled = false;
+        sel("#btnStop").disabled = true;
+        sel("#recMsg").textContent = "Yükleme başlatıldı…";
+      }
+    });
+
+    // -------- 3) Yazılı notu .txt olarak yükle --------
+    sel("#btnNote").addEventListener("click", async () => {
+      const area = sel("#noteArea");
+      const text = (area.value || "").trim();
+      const el = sel("#noteMsg");
+      el.textContent = "";
+      if (!text) { el.textContent = "Lütfen bir not yazın."; return; }
+      try {
+        sel("#btnNote").disabled = true;
+        el.textContent = "Yükleniyor…";
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const file = new File([blob], `note_${Date.now()}.txt`, { type: "text/plain" });
+        // .txt için "raw" resource type daha sağlıklıdır
+        const data = await uploadToCloudinary(file, "raw");
+        el.innerHTML = `<div class="success">Not kaydedildi ✔️ <a href="${data.secure_url}" target="_blank">Gör</a></div>`;
+        addTile({ url: data.secure_url, kind: "note", noteText: text });
+        area.value = "";
+      } catch (e) {
+        el.innerHTML = `<div class="error">Hata: ${e.message}</div>`;
+      } finally {
+        sel("#btnNote").disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
